@@ -11,21 +11,11 @@ function getElement(name) {
 }
 
 Component.prototype.create = function (model) {
-  var self = this;
+  model.on('change', '_name', this._onChangeMetaName.bind(this));
+  model.on('change', 'name', this._onChangeMetaName.bind(this));
+  model.on('change', 'content', this._onChangeMetaContent.bind(this));
 
-  model.on('change', 'name', function (nextName, prevName) {
-    if (prevName) {
-      getElement(prevName).name = self.getAttribute('name');
-    }
-  });
-
-  model.on('change', 'content', function (content) {
-    getElement(self.getAttribute('name')).content = (
-      self.getAttribute('content') || ''
-    );
-  });
-
-  var el = getElement(self.getAttribute('name'));
+  var el = getElement(this._getMetaName());
 
   if (!el) {
     el = window.document.querySelector('head').appendChild(
@@ -33,13 +23,30 @@ Component.prototype.create = function (model) {
     );
   }
 
-  el.name = self.getAttribute('name');
-  el.content = self.getAttribute('content') || '';
+  el.name = this._getMetaName();
+  el.content = this.getAttribute('content') || '';
 };
 
 Component.prototype.destroy = function () {
-  var el = getElement(this.getAttribute('name'));
+  var el = getElement(this._getMetaName());
   if (el) el.remove();
+};
+
+Component.prototype._getMetaName = function () {
+  return (this.getAttribute('_name') || this.getAttribute('name'))
+};
+
+Component.prototype._onChangeMetaName = function (nextName, prevName) {
+  if (!prevName) return;
+  var el = getElement(prevName);
+  if (!el) return;
+  el.name = this._getMetaName();
+};
+
+Component.prototype._onChangeMetaContent = function (content) {
+  var el = getElement(this._getMetaName());
+  if (!el) return;
+  el.content = (this.getAttribute('content') || '');
 };
 
 module.exports = Component;
