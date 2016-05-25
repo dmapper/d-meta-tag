@@ -2,7 +2,7 @@
 
 function Component() {}
 
-Component.prototype.view = __dirname;
+Component.prototype.view = require('./index.jade');
 
 function getElement(name) {
   return window.document.querySelector(
